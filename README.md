@@ -54,7 +54,7 @@ Department : Mechanical and control engineering
 
 ## Part 1 : Feature extraction
 
-### Terminology
+### 1. Terminology
 
 * Variance
 
@@ -179,7 +179,7 @@ end
 
 
 
-### Window
+### 2. Window
 
 * Window is used to damp out the effects of the Gibbs phenomenon that results from truncation of an infinite series.
 
@@ -197,7 +197,7 @@ end
 
 
 
-### Short time Fourier Transformation
+### 3. Short time Fourier Transformation
 
 * Linear time-frequency representation useful in the analysis of nonstationary multicomponent signals.
 
@@ -242,7 +242,7 @@ end
 
 
 
-### Wavelet transformation
+### 4. Wavelet transformation
 
 * 특정 신호의 scale과 shifting을 통해 시간 간격 및 주파수 해상도를 때에 따라 다르게 가져가는 기법
 
@@ -252,7 +252,7 @@ end
 
 
 
-### Wavelet Multi-Level Decomposition
+### 5. Wavelet Multi-Level Decomposition
 
 * This method is used to decompose low frequency signals iteratively
 * Often used in bearing fault diagnosis
@@ -311,29 +311,152 @@ end
 
 <img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230309171004560.png" alt="image-20230309171004560" style="zoom:67%;" />
 
-* 
 
-* 
 
-* 
+### 6. Envelop Extraction for bearing fault signal 
 
-* 
+#### 6.1. Purpose
 
-  
-
-  
-
-  
-
-  
+* Bearing fault signal due to impact cycle can be seen as modulated signal
+* Apply envelope extraction to get the envelope (fault signal) from modulated signal
 
 
 
+#### 6.2. Procedure
+
+Procedure 1 : Analytic signal
+
+* Analytic Signal Z(t)
+
+$$
+Analytic signal : z(t) = z_{r}(t) + jz_{i}(t) = x(t) + jHT(x(t))\\
+\\
+Real\,term\, +\, Complex\, term
+$$
+
+* Hilbert transform으로 인해, transform된 신호는 원신호에서 위상이 90도 지상/진상이 되어 나타난다.
+* x(t) = m(t) * c(t) = Modulating * Carrier
+
+<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315162838323.png" alt="image-20230315162838323" style="zoom:50%;" />
 
 
 
+Procedure 2 : FFT , IFFT
+
+* FFT(x(t))를 통해 one sided z[m]을 구한다.
+* z[m]을 ifft를 취하게 되면, 위와 같이 real part 와 imaginary part로 구분이 된다.
 
 
+
+#### 6.3. MATLAB sample code
+
+```matlab
+% sampling frequency in Hz, time base 
+fs = 600; 
+t = 0:1/fs:1-1/fs;
+
+% Amplitude, Information signal with offset
+a_t = 1.0 +0.5 * sin(2.0 * pi * 3.0 * t) ; 
+
+% Carrier
+c_t = sin(2 * pi * 50 * t);
+
+% Moduleated Signal , Hilbert transform
+x = a_t .* c_t; 
+z = hilbert(x);    
+
+inst_amplitude = abs(z);     
+inst_phase = unwrap(angle(z));
+
+%% Envelope extraction
+inst_amplitude = abs(z);     
+
+%% inst. phase
+inst_phase = unwrap(angle(z));  %inst phase
+
+%% inst. frequency (carrier)
+inst_freq = diff(inst_phase)/(2*pi) * fs; 
+
+%% Regenerate the carrier from the instantaneous phase
+regenerated_carrier = cos(inst_phase);
+
+[freq, mag] = getFFT(x, length(t), fs);
+
+figure();
+plot(freq, mag);
+```
+
+
+
+### 7. Kurtogram
+
+* Kurtogram can be used to get optimal window size
+* Then, it can improve the differentiation between stationary and nonstationary components
+* 신호의 주파수가 시간에 따라 가변적이라면, 그에 따라 Kurtosis가 달라질 것이고, 적용하는 window size도 달리 해야할 것이다.
+
+#### 7.1. sample code
+
+```matlab
+fs= 1e3;
+ts = 0:1/fs:10;
+f0 = 100;
+f1 = 200;
+
+xc = chirp(ts, f0, ts(length(ts)), f1);
+x = xc + randn(1,length(ts));
+
+kurtogram(x, fs);
+```
+
+<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170349314.png" alt="image-20230315170349314" style="zoom:45%;" />
+
+#### 7.2. sample code of spectral kurtosis
+
+```matlab
+pkurtosis(x, fs)
+title('Spectral Kurtosis with Default Window Size')
+```
+
+<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170544740.png" alt="image-20230315170544740" style="zoom:45%;" />
+
+```matlab
+[kgram,f,w,fc,wc,bw] = kurtogram(x);
+pkurtosis(x, fs, wc);
+
+title('Spectral Kurtosis with Optimum Window Size')
+```
+
+<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170646471.png" alt="image-20230315170646471" style="zoom:45%;" />
+
+
+
+## Part2 : Case study (Rolling Element Bearing Fault Diagnosis)
+
+### 1. Bearing fault 101
+
+#### 1.1. Terminology
+
+* f_r : shaft frequency 
+
+* n : # of rolling element
+
+* pi : bearing contact angle
+
+  <img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230316011254235.png" alt="image-20230316011254235" style="zoom: 33%;" />
+
+
+
+#### 1.2. Algorithm flow
+
+1. Raw signal
+
+2. Time analysis : Modulation, Kurtosis
+
+   Frequency analysis : Power spectrum, Envelope signal, Spectral Kurtosis
+
+   Time-Frequency analysis : Kurtogram
+
+3. Feature extraction : Envelope analysis
 
 
 

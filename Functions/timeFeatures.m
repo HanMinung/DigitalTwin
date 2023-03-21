@@ -1,9 +1,9 @@
-function xfeature = timeFeatures(input) 
+function xfeature = timeFeatures(input, name) 
     
     x =  input;
-    xfeature = table;
+    xfeature = table('RowNames', name);
     N = length(x);
-    
+
     xfeature.mean = mean(x);
     xfeature.std = std(x);
     xfeature.rms = sqrt(sum(power(x,2))/N);

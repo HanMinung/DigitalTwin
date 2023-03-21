@@ -1,6 +1,6 @@
-function freqfeature = freqFeatures(P)
+function freqfeature = freqFeatures(P, name)
 
-    freqfeature = table;
+    freqfeature = table('RowNames', name);
     N = length(P);
 
     freqfeature.fc = sum(P)/N;

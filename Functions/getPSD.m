@@ -5,11 +5,12 @@
 %   L : data of size of discrete signal
 %   Fs : sampling frequency
 
-function psdx = getPSD(x,L,Fs, type)
+function [f, psdx] = getPSD(x,L,Fs, type)
 
     Y = fft(x,L);
     P2 = abs(Y);
-    
+    f = Fs * (0:(L/2))/L; 
+
     psdx = (1/(Fs*L)) * P2(1:L/2+1).^2;
     ret = 2 * psdx(2:end-1);
 
