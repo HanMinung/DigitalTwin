@@ -6,7 +6,7 @@ Semester : Spring semester, 2023
 
 Univ : Handong global university
 
-Department : Mechanical and control engineering
+School Mechanical and control engineering
 
 
 
@@ -16,14 +16,14 @@ Department : Mechanical and control engineering
 
 
 
-## Introduction
+## 1. Introduction
 
-### PHM
+### 1.1. PHM
 
 * Prognostics and Health management
 * Technology that collects information on machines, equipment, etc., detects, analyzes, and diagnoses abnormal situations in the system, predicts the time of failure in advance, and optimizes management.
 
-### Terminology
+### 1.2. Terminology
 
 * fault
   * Abnormal state of system 
@@ -33,11 +33,11 @@ Department : Mechanical and control engineering
 * malfunction
   * Temporary interruption
 
-### Usage
+### 1.3. Usage
 
 * Mainly occurring in industrial sites include failure due to inner or outer cracks of bearings, and a process of diagnosing failures is required.
 
-### Process
+### 1.4. Process
 
 * Acquire data
 * Preprocess data : denoise
@@ -52,9 +52,9 @@ Department : Mechanical and control engineering
 
 
 
-## Part 1 : Feature extraction
+## 2. Part 1 : Feature extraction
 
-### 1. Terminology
+### 2.1. Terminology
 
 * Variance
 
@@ -179,7 +179,7 @@ end
 
 
 
-### 2. Window
+### 2.2. Window
 
 * Window is used to damp out the effects of the Gibbs phenomenon that results from truncation of an infinite series.
 
@@ -197,7 +197,7 @@ end
 
 
 
-### 3. Short time Fourier Transformation
+### Short time Fourier Transformation
 
 * Linear time-frequency representation useful in the analysis of nonstationary multicomponent signals.
 
@@ -242,7 +242,7 @@ end
 
 
 
-### 4. Wavelet transformation
+### 2.3. Wavelet transformation
 
 * 특정 신호의 scale과 shifting을 통해 시간 간격 및 주파수 해상도를 때에 따라 다르게 가져가는 기법
 
@@ -252,7 +252,7 @@ end
 
 
 
-### 5. Wavelet Multi-Level Decomposition
+### 2.4. Wavelet Multi-Level Decomposition
 
 * This method is used to decompose low frequency signals iteratively
 * Often used in bearing fault diagnosis
@@ -313,150 +313,433 @@ end
 
 
 
-### 6. Envelop Extraction for bearing fault signal 
-
-#### 6.1. Purpose
-
-* Bearing fault signal due to impact cycle can be seen as modulated signal
-* Apply envelope extraction to get the envelope (fault signal) from modulated signal
 
 
+## 3. Part 2 : Machine Learning (1)
 
-#### 6.2. Procedure
+### 3.1. machine learning (1) : Contents and flow
 
-Procedure 1 : Analytic signal
+* Supervised Classification
+  * Logistic Regression
+  * LDA
+  * SVM
+  * Decision Tree
+  * Random Forrest
+  * Neutral Network
+* Unsupervised (Cluster)
+  * K-NN
+* Workflow for maching learning
+  1. Data loading
+  2. Preprocessing
+  3. Feature extraction from preprocessed data
+  4. Machine learning with such features
+  5. Repetition for selecting best model
+  6. system reflection with best model
 
-* Analytic Signal Z(t)
+
+
+### 3.2. Linear regression
+
+#### 3.2.1. Concept
+
+<img src="https://user-images.githubusercontent.com/99113269/227145082-d3550d5e-8e27-476e-9af6-260356e1c512.png" alt="image" style="zoom:45%;" />
+
+#### 3.2.2. Gradient descent
+
+* Extrema point is located at gradient = 0
+* Minimize cost/loss function : J(w)
+* Control the step size with learning rate
+
+<img src="https://user-images.githubusercontent.com/99113269/227145337-a84a859c-ce5b-4bac-8709-fe4d1bb50505.png" alt="image" style="zoom:50%;" />
+
+
+
+#### 3.2.3. Gradient descent example code
+
+* Example code of gradient descent when p = 1
+
+  ```matlab
+  N=100;
+  X = randn(N,1);
+  Y = X*2 + 3+randn(N,1);
+  
+  %  Variable
+  lamda=0.1;	t0 = 0.5;	t1 = 0.5;	e = 1;	itrN = 1000;	k=0;
+  
+  while(e > 0.001 || k < itrN)
+      
+      h = t1 .* X + t0;
+  
+      dJt1 = (-1) * mean(X .* (Y-h));
+      dJt0 = (-1) * mean(Y - h);
+  
+      t1_new = t1 - lamda .* dJt1;
+      t0_new = t0 - lamda .* dJt0;
+  
+      e = 0.5 * (abs((t1_new-t1))+abs((t0_new-t0)));
+      
+      t1 = t1_new;
+      t0 = t0_new;
+  
+      k=k+1;
+  
+  end
+  ```
+
+* Example code of gradient descent when p=2
+
+  ```matlab
+  X = randn(100,2);
+  Y = X * [2;4] + 3+ randn(100,1);
+  
+  %  Variable
+  lamda=0.1;	t0 = 0.5;	t1 = 0.5;	t2 = 0.5;	e = 1;	itrN = 1000;	k = 0;
+  
+  while(e > 0.001 || k < itrN)
+      
+      h = X * [t1 ; t2] + t0;
+      
+      dJt2 = -(mean(X(:, 2) .* (Y - h)));
+      dJt1 = -(mean(X(:, 1) .* (Y - h)));
+      dJt0 = (-1) * mean(Y - h);
+      
+      t2_new = t2 - lamda .* dJt2;
+      t1_new = t1 - lamda .* dJt1;
+      t0_new = t0 - lamda .* dJt0;
+  
+      e = 0.5 * (abs((t2_new - t2)) + abs((t1_new - t1)) + abs((t0_new - t0)));
+      
+      t2 = t2_new;
+      t1 = t1_new;
+      t0 = t0_new;
+  
+      k=k+1;
+  
+  end
+  ```
+
+
+
+
+
+### 3.3. Classification
+
+* Estimating optimal decision boundary to classify categorical data
+
+* Non-linear function : Polynomial, Gaussian
+
+  
+
+#### 3.3.1. Logistic regression
+
+* Logistic regression : classification learning algorithm
+
+* A regression model for categorical data 
+
+* Apply gradient descent method to find optimal parameter `theta ` to minimize the cost function
+
+* Why do we use sigmoid function ?
+
+  * Categorical data, bound prediction output within 0 ~ 1
+  * Probability for class y = 1 for given data x
+
+* Concepts
+
+  <img src="https://user-images.githubusercontent.com/99113269/227254570-9dd4fed9-a598-49a1-b713-d3ee4cf22a6c.png" alt="image" style="zoom: 90%;" />
+
+
+
+#### 3.3.2. Logistic regression example 1 : fisheriris
+
+```matlab
+clear 
+
+load fisheriris
+
+X = meas(:,1:2);               					% select two features : 꽃받침 길이, 너비
+sp = categorical(species);
+Ystat = sp == 'setosa';   	    				% Binary classfication : setosa vs no setosa    
+
+Mdl = fitclinear(X,Ystat,'Learner','logistic')  % Process of fitting generalized regression model 
+z = Mdl.Bias + X * Mdl.Beta;					% Form : Wx + b
+
+Y = 1./ (1 + exp(-z));							% Logistic regression 
+
+Y1indx = find(sp == 'setosa');					% 50 x 1
+Y0indx = find(sp ~= 'setosa');					% 100 x 1
+
+figure
+plot(z(Y1indx),Y(Y1indx),'k.')
+hold on
+plot(z(Y0indx),Y(Y0indx),'b*')
+hold off
+```
+
+<img src="https://user-images.githubusercontent.com/99113269/227261369-503dfdf6-c589-4a29-8ffa-f7590e9f767f.png" alt="image" style="zoom:70%;" />
+
+
+
+#### 3.3.3. Logistic regression example 2 : CWRU bearing dataset
+
+```matlab
+clear
+
+% Class : Inner & Outer
+load("../3_MachingLearning/CRWU_Datas/example_train.mat");
+
+feature1 = "sv";         					% skewness value of time data
+feature2 = "ipf";       				 	% impulse factor
+
+% two classes : Xtrain table about sv, ipf feature
+Xtrain(:, 1) = table2array(glob_all_train(:, feature1));
+Xtrain(:, 2) = table2array(glob_all_train(:, feature2));
+
+Ytrain = class_cwru_train;                  % fault class
+classKeep = ~strcmp(Ytrain,'normal');       % eliminate normal class
+
+X = Xtrain(classKeep,:);  					% X : SV value , IF value of fault data
+Y = Ytrain(classKeep);						% Y : Inner or Outer
+
+f = figure;
+gscatter(X(:,1), X(:,2), Y,'rb','os');
+xlabel('Feature 1');
+ylabel('Feature 2');
+```
+
+<img src="https://user-images.githubusercontent.com/99113269/227266802-9e3815ba-d6c3-4ccf-b6d5-6e52ea20c446.png" alt="image" style="zoom: 67%;" />
+
+
+
+#### 3.3.4. Bayesian classification
+
+* Calulation of bayesian estimation : 
+
+<img src="https://user-images.githubusercontent.com/99113269/227698523-666554ab-a8be-47a3-82bd-92b151165e81.png" alt="image" style="zoom:33%;" />
+
+* Bayesian classification은 지도 학습의 일종. 
+* Training data set을 가지고 classifier 모델을 학습시킨뒤, test set을 가지고 classifier 모델의 성능을 평가한다. 
+* 성능은 performance, accuracy, precision, recall 등으로 측정할 수 있다. 
+
+* Process of bayesian classification
+
+  * 두 클래스 w_1, w_2에 대해서
+
+  $$
+  if\quad P(w_1|x) > P(w_2|x)\quad then, \;chosoe \;w_1 else\; chosse\; w_2
+  $$
+
+* Example of bayesian classification
+
+  <img src="https://user-images.githubusercontent.com/99113269/227699172-d37158ab-3054-4961-b8f9-51d66c730ae2.png" alt="image" style="zoom:50%;" />
+
+#### 3.3.5. LDA : Linear Discriminant Analysis
+
+A bayesian classification with assumption of 
+
+* Likelihood P(x|wi) : Normal Distribution (Gaussian form)
+* Each class has equal covariance 
+
+Boundary for class k is defined as follows :
+
+<img src="https://user-images.githubusercontent.com/99113269/227699354-b71d180c-9014-43bf-bd23-991c1e705c3e.png" alt="image" style="zoom:50%;" />
+
+If covariance is different for each class, quadratic discriminant analysis is performed
+
+<img src="https://user-images.githubusercontent.com/99113269/227699501-7da87a24-24c8-4eb7-b535-38b4af78479a.png" alt="image" style="zoom:50%;" />
+
+​	
+
+#### 3.5.6. Evaluation
+
+* Precision, Recall, Accuracy, Confusion Matrix
+
+  <img src="https://user-images.githubusercontent.com/99113269/227700271-59b1d8eb-c495-47d5-9292-2adf61fd582c.png" alt="image" style="zoom:50%;" />
+
+* TPR (sensitivity or erecall)
+
+  * 데이터 세트의 총 양성 인스턴스 수에 대한 올바르게 분류된 양성 인스턴스의 비율
+
+* FPR (false positive ratio)
+
+  * 데이터 세트의 총 음성 인스턴스 수에 대한 잘못 분류된 음성 인스턴스의 비율
+  * FNR과 FPR 모두 잘못 분류된 인스턴스 집합을 기준으로 계산한다.
+    * FNR : 음성으로 잘못 분류된 양성 사례의 비율을 측정
+    * FPR : 양성으로 잘못 분류된 음성 사례의 비율을 측정
 
 $$
-Analytic signal : z(t) = z_{r}(t) + jz_{i}(t) = x(t) + jHT(x(t))\\
-\\
-Real\,term\, +\, Complex\, term
+True Positive Ratio \;(TPR) = \frac {True Positive}{True Positivie + False Positive} \\\\
+False Positive Ratio \;(FPR) = \frac {False Positive}{False Positive + True Negative}
 $$
 
-* Hilbert transform으로 인해, transform된 신호는 원신호에서 위상이 90도 지상/진상이 되어 나타난다.
-* x(t) = m(t) * c(t) = Modulating * Carrier
-
-<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315162838323.png" alt="image-20230315162838323" style="zoom:50%;" />
-
-
-
-Procedure 2 : FFT , IFFT
-
-* FFT(x(t))를 통해 one sided z[m]을 구한다.
-* z[m]을 ifft를 취하게 되면, 위와 같이 real part 와 imaginary part로 구분이 된다.
+* How can we calculate accuracy with calculated precision and recall?
+  $$
+  Accuracy = \frac{True Positive + True Negative}{True Positive + False Positive + True Negative + False Negative}
+  $$
+  
 
 
 
-#### 6.3. MATLAB sample code
+#### 3.5.7. LDA, LQA example : CWRU bearing data 
 
-```matlab
-% sampling frequency in Hz, time base 
-fs = 600; 
-t = 0:1/fs:1-1/fs;
+* Data sets : class (normal, inner, outer)
+  * feature 1 : sv
+  * feature 2 : impulse factor
 
-% Amplitude, Information signal with offset
-a_t = 1.0 +0.5 * sin(2.0 * pi * 3.0 * t) ; 
-
-% Carrier
-c_t = sin(2 * pi * 50 * t);
-
-% Moduleated Signal , Hilbert transform
-x = a_t .* c_t; 
-z = hilbert(x);    
-
-inst_amplitude = abs(z);     
-inst_phase = unwrap(angle(z));
-
-%% Envelope extraction
-inst_amplitude = abs(z);     
-
-%% inst. phase
-inst_phase = unwrap(angle(z));  %inst phase
-
-%% inst. frequency (carrier)
-inst_freq = diff(inst_phase)/(2*pi) * fs; 
-
-%% Regenerate the carrier from the instantaneous phase
-regenerated_carrier = cos(inst_phase);
-
-[freq, mag] = getFFT(x, length(t), fs);
-
-figure();
-plot(freq, mag);
-```
-
-
-
-### 7. Kurtogram
-
-* Kurtogram can be used to get optimal window size
-* Then, it can improve the differentiation between stationary and nonstationary components
-* 신호의 주파수가 시간에 따라 가변적이라면, 그에 따라 Kurtosis가 달라질 것이고, 적용하는 window size도 달리 해야할 것이다.
-
-#### 7.1. sample code
+<img src="https://user-images.githubusercontent.com/99113269/227702393-6e4443b2-54d5-4ed6-ac19-9040afc3e93b.png" alt="image" style="zoom:50%;" />
 
 ```matlab
-fs= 1e3;
-ts = 0:1/fs:10;
-f0 = 100;
-f1 = 200;
+% fit classification discriminant
+lda = fitcdiscr(X,Y);								% default : LDA
+ldaResubErr = resubLoss(lda)						% Calculation of misclassification of training set
 
-xc = chirp(ts, f0, ts(length(ts)), f1);
-x = xc + randn(1,length(ts));
+ldaClass = resubPredict(lda);						% classified 'ldaClass' based on trained model
 
-kurtogram(x, fs);
+figure
+ldaResubCM = confusionchart(Y,ldaClass);			
 ```
 
-<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170349314.png" alt="image-20230315170349314" style="zoom:45%;" />
+<img src="https://user-images.githubusercontent.com/99113269/227705785-f805bf84-db83-447c-af0c-8e021224b3ca.png" alt="image" style="zoom:50%;" />
 
-#### 7.2. sample code of spectral kurtosis
+* Misclassification plot
 
 ```matlab
-pkurtosis(x, fs)
-title('Spectral Kurtosis with Default Window Size')
+bad = ~strcmp(ldaClass, Y);
+
+figure
+gscatter(X(:,1),X(:,2),Y)
+hold on;
+plot(X(bad,1), X(bad,2), 'kx');
+hold off;
+xlabel('Feature 1')
+ylabel('Feature 2')
 ```
 
-<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170544740.png" alt="image-20230315170544740" style="zoom:45%;" />
+<img src="https://user-images.githubusercontent.com/99113269/227705819-0722c92e-f4a0-4a0d-976d-b6a4f24dd104.png" alt="image" style="zoom:50%;" />
+
+
+
+
+
+
+
+## 4. Part 2 : Machine Learning (2)
+
+### 4.1. SVM 
+
+* Margin : shortest distance between the observation and the decision boundary
+* Hyperplane boundary to classify the feature X as the label
+* Hyperplane is expressed with two parameters.
+* Terminology : Margin, Slack
+
+​		마진 평면을 넘어가는 인스턴스를 허용하는 서포트 벡터 머신을 soft margin SVM 이라 한다.
+
+<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230325195404559.png" alt="image-20230325195404559" style="zoom:50%;" />
+
+​		이 방법을 사용할 때에는 마진 평면을 넘어가는 인스턴스에 대해 페널티를 부여 `Zeta` 
+
+​		패널티 : 자신이 속한 클래스의 마진 평면에서 떨어진 거리
+
+* C-SVM의 목적 함수 :
+
+  <img src="https://user-images.githubusercontent.com/99113269/227712966-934c063a-9555-46e6-906a-cf23d01c3890.png" alt="image" style="zoom:50%;" />
+
+  <img src="https://user-images.githubusercontent.com/99113269/227713324-b70dfc1a-abb2-47b4-8196-cb4cd7f83e18.png" alt="image" style="zoom: 40%;" />
+
+* 데이터가 복잡해지는 경우, 선형으로 구분할 수 없는 경우가 발생하고, 차원을 올려 비선형 boundary를 만들어주게 된다.
+
+  * Polynomial
+  * Gaussian RBF
+
+
+
+#### 4.1.1. SVM example :  Circular distribution
+
+<img src="https://user-images.githubusercontent.com/99113269/227714005-ca5f4948-c897-41c8-add4-cd109e54929a.png" alt="image" style="zoom:50%;" />
 
 ```matlab
-[kgram,f,w,fc,wc,bw] = kurtogram(x);
-pkurtosis(x, fs, wc);
+cl = fitcsvm(dataC,theclass,'KernelFunction','rbf','BoxConstraint',Inf,'ClassNames',[-1,1]);
+  
+mlResubErr = resubLoss(cl)								% misclassification error  on the training set.
+mlClass = resubPredict(cl);								% Confusion matrix on the training set
+	
+figure()
+ldaResubCM = confusionchart(theclass,mlClass);
 
-title('Spectral Kurtosis with Optimum Window Size')
+% Predict scores on the grid
+d = 0.02;
+
+[x1Grid,x2Grid] = meshgrid(min(dataC(:,1)) : d:max(dataC(:,1)), min(dataC(:,2)) : d : max(dataC(:,2)));
+xGrid = [x1Grid(:),x2Grid(:)];
+[~,scores] = predict(cl,xGrid);
+
+% Plot the data and the decision boundary
+figure;
+h(1:2) = gscatter(dataC(:,1),dataC(:,2),theclass,'rb','.');
+hold on
+ezpolar(@(x)1);
+h(3) = plot(dataC(cl.IsSupportVector,1),dataC(cl.IsSupportVector,2),'ko');
+contour(x1Grid,x2Grid,reshape(scores(:,2),size(x1Grid)),[0 0],'k');
+legend(h,{'-1','+1','Support Vectors'});
+axis equal
+hold off
 ```
 
-<img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230315170646471.png" alt="image-20230315170646471" style="zoom:45%;" />
+<img src="https://user-images.githubusercontent.com/99113269/227714260-eb0af5bb-4402-4807-b5e7-acf8cdf16cdc.png" alt="image" style="zoom: 67%;" />
 
 
 
-## Part2 : Case study (Rolling Element Bearing Fault Diagnosis)
+### 4.2. Decision Tree
 
-### 1. Bearing fault 101
-
-#### 1.1. Terminology
-
-* f_r : shaft frequency 
-
-* n : # of rolling element
-
-* pi : bearing contact angle
-
-  <img src="C:\Users\hanmu\AppData\Roaming\Typora\typora-user-images\image-20230316011254235.png" alt="image-20230316011254235" style="zoom: 33%;" />
+* Impurity : 해당 범주 안에 서로 다른 데이터가 얼마나 섞여 있는가?
+* Entropy : 불순도를 수치적으로 나타낸 척도
+* CART : Classification and Regression Tree
+  * Popular method for decision tree
+  * Finds the feature and criteria that best differentiate the data that maximize information gain or minimize the impurity
 
 
 
-#### 1.2. Algorithm flow
+#### 4.2.1. Impurity - Gini index
 
-1. Raw signal
+* Decision tree의 분리 성능을 평가하기 위한 지표 
 
-2. Time analysis : Modulation, Kurtosis
+* 어떤 기준을 적용한뒤, 결과의 불순도가 낮을수록 좋다.
 
-   Frequency analysis : Power spectrum, Envelope signal, Spectral Kurtosis
+* 0에 가까울 수록, 그 클래스에 속한 불순도가 낮으므로 좋다. 
+  $$
+  GINI(t)=1- \sum(p(j|t))^2
+  $$
+  
 
-   Time-Frequency analysis : Kurtogram
+#### 4.2.2. Example of Gini index
 
-3. Feature extraction : Envelope analysis
+<img src="https://user-images.githubusercontent.com/99113269/227862816-ea2d5d5a-3f79-4850-8ace-5bb4907602f8.png" alt="image" style="zoom: 33%;" />
+
+
+
+#### 4.2.3. Impurity - Entropy & Information gain
+
+* Entropy or Information gain
+
+* 데이터가 불순할 수록 얻을 수 있는 정보량은 적다.
+
+* High value of entropy : Insufficient informations to determine.
+  $$
+  Entropy(t) = -\sum P(j|t)\log_2(P(j|t))
+  $$
+
+
+
+#### 4.2.4. Example of Entropy
+
+<img src="https://user-images.githubusercontent.com/99113269/227864329-3c968bae-614b-4cfe-8794-894b1742b488.png" alt="image" style="zoom: 33%;" />
+
+
+
+
+
+
+
+
 
 
 
